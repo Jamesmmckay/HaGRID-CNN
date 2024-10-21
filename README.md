@@ -1,2 +1,1 @@
-# ESOF-4559-Project
 # HaGRID CNN
