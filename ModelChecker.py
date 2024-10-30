@@ -15,6 +15,16 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from AlexNet import AlexNet
 from CustomImageDataset import CustomImageDataset
 
+import json
+
+# Konfigurationsdatei einlesen
+with open('config.json', 'r') as config_file:
+    config = json.load(config_file)
+
+# Zugriff auf die Pfade
+subsample_path = config.get("file_path_1")
+ann_subsample_path = config.get("file_path_2")
+
 batch_size = 10 # these values still need to be adjusted
 lr = 0.1
 num_classes = 18
@@ -26,8 +36,8 @@ random_seed = 37
 transform = transforms.Compose([transforms.ToTensor(),transforms.Resize((224,224))])
 
 #Update Path as needed for the dataset
-external_training_path = 'D:\\HagridDataset\\subsample'
-external_annotation_path = 'D:\\HagridDataset\\ann_subsample\\ann_subsample'
+external_training_path = subsample_path
+external_annotation_path = ann_subsample_path
 
 #Get the data set
 dataset = CustomImageDataset(annotation_dir=external_annotation_path,img_dir=external_training_path, transform=transform)
