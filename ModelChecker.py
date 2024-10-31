@@ -17,18 +17,16 @@ from CustomImageDataset import CustomImageDataset
 
 import json
 
-# Konfigurationsdatei einlesen
 with open('config.json', 'r') as config_file:
     config = json.load(config_file)
 
-# Zugriff auf die Pfade
 subsample_path = config.get("file_path_1")
 ann_subsample_path = config.get("file_path_2")
 
 batch_size = 10 # these values still need to be adjusted
 lr = 0.1
 num_classes = 18
-epochs = 2
+epochs = 1
 testing_ratio = 1
 random_seed = 37
 
@@ -107,10 +105,10 @@ current_time = time.time()
 total = current_time - start_time
 
 
-torch.save(model.state_dict(), os.path.join(os.path.dirname(os.path.realpath(__file__)), "Models"))
-print(f"{test_losses}")
-print("-------------------------------------------------")
-print(f"{test_correct}")
+#torch.save(model.state_dict(), os.path.join(os.path.dirname(os.path.realpath(__file__)), "Models"))
+#print(f"{test_losses}")
+#print("-------------------------------------------------")
+#print(f"{test_correct}")
 print(f"Training took: {total/60} minutes")
 #plt.plot(len(dataset), train_correct, label="Training Correct")
 #plt.plot(len(dataset), train_losses, label="Training Losses")

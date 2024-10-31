@@ -64,7 +64,7 @@ class CustomImageDataset(Dataset):
         else:
             label = self.label_map[(image_annotation.iloc[1])[1]]  # Backup label if "no_gesture"
 
-        label = torch.tensor([label])  # Convert label to a tensor for PyTorch operations
+        label = torch.tensor(label)  # Convert label to a tensor for PyTorch operations
         
         try:
             # Apply transformation to the image, if any
@@ -103,7 +103,7 @@ class CustomImageDataset(Dataset):
             "label": label
         }
 
-        return image, target
+        return image, label
 
 def combine_annotations(annotation_dir):
     """
