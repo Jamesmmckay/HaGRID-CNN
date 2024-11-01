@@ -64,7 +64,7 @@ train_correct = []
 test_correct = []
 
 model = AlexNet(num_classes=num_classes)
-model.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.realpath(__file__)), "Models")))
+model.load_state_dict(torch.load(os.path.join(os.path.dirname(os.path.realpath(__file__)), "Models", weights_only=True)))
 
 #Loss function
 criterion = nn.CrossEntropyLoss()
@@ -95,6 +95,8 @@ for epoch in range(epochs):
             predicted = torch.max(y_val.data,1)[1]
             loss = criterion(y_val, y_test)
             tst_cor += (predicted == y_test).sum()
+            if (b % 20 == 0):
+                print(f"Batch: {b}")
             
     
     print(f"Epoch: {epoch} \t Loss: {loss.item()}")
