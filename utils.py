@@ -2,6 +2,24 @@ import os
 import json
 import pandas as pd
 
+def calculate_average_bbox_area(annotation_dir, class_name: str):
+    average_bbox_size = 0
+    class_annotation = {}
+    count = 0
+    for file in os.listdir(annotation_dir):
+        if (class_name == os.path.splitext(file)[0]):
+            class_annotation = pd.read_json(os.path.join(annotation_dir, file))
+            break
+    for key in class_annotation:
+        bboxes = class_annotation[key].get('bboxes',[])
+        for box in bboxes:
+            count = count + 1
+            #Bounding boxes stored in COCO format, therefore index 2 and index 3
+            #will contain width and heigh
+            average_bbox_size = average_bbox_size + box[2] * box[3]
+        
+    return average_bbox_size / count if count > 0 else 0
+
 def combine_annotations(annotation_dir):
     """
     Combine annotations from all JSON files in the annotation directory.
