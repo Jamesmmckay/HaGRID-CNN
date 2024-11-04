@@ -14,15 +14,10 @@ from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from AlexNet import AlexNet
 from CustomImageDataset import CustomImageDataset
-
+import utils
 import json
 
-with open('config.json', 'r') as config_file:
-    config = json.load(config_file)
-
-subsample_path = config.get("file_path_1")
-ann_subsample_path = config.get("file_path_2")
-
+subsample_path, ann_subsample_path = utils.load_config_file_paths()
 batch_size = 10 # these values still need to be adjusted
 lr = 0.1
 num_classes = 18

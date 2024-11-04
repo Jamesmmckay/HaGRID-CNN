@@ -8,6 +8,7 @@ from pathlib import Path
 import pandas as pd
 from PIL import Image
 from torch.nn.utils.rnn import pad_sequence
+import utils
 
 class CustomImageDataset(Dataset):
     def __init__(self, annotation_dir, img_dir, transform=None, target_transform=None):
@@ -17,7 +18,7 @@ class CustomImageDataset(Dataset):
         self.annotations = []
         self.label_map = {}
         # Load and combine annotations from all JSON files in the annotation directory
-        self.annotations, self.label_map = combine_annotations(annotation_dir)
+        self.annotations, self.label_map = utils.combine_annotations(annotation_dir)
         self.transform = transform
 
         # Gather all image file paths from the directory structure
@@ -104,24 +105,3 @@ class CustomImageDataset(Dataset):
         }
 
         return image, label
-
-def combine_annotations(annotation_dir):
-    """
-    Combine annotations from all JSON files in the annotation directory.
-    Returns:
-        class_annotations (list): List of DataFrames, one for each class.
-        label_map (dict): Maps class names to integer labels.
-    """
-    class_annotations = []  # Store annotations for each class
-    label_map = {}  # Map class names to integer labels
-    i = 0
-
-    # Iterate through all JSON files in the annotation directory
-    for file in os.listdir(annotation_dir):
-        # Load each JSON file as a DataFrame and store it
-        class_annotations.append(pd.read_json(os.path.join(annotation_dir, file)))
-        # Map the class name (file name without extension) to an integer
-        label_map[os.path.splitext(file)[0]] = i
-        i += 1
-
-    return class_annotations, label_map
