@@ -18,10 +18,9 @@ def calculate_average_bbox_area(annotation_dir, class_name: str):
             #Bounding boxes stored in COCO format, therefore index 2 and index 3
             #will contain width and heigh
             average_bbox_size = average_bbox_size + box[2] * box[3]
-            if (count % 20 == 0):
-                print(f"Count: {count} -> BBox Area: {average_bbox_size}")
-        
-    return average_bbox_size / count if count > 0 else 0
+            
+    
+    return average_bbox_size, count
 
 def combine_annotations(annotation_dir):
     """
@@ -81,9 +80,15 @@ def get_label_map(annotation_dir):
     return label_map
 
 def load_config_file_paths():
-    with open('config.json', 'r') as config_file:
+    # Get the directory where this script is located
+    script_directory = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(script_directory, 'config.json')
+    
+    # Open the config file using the absolute path
+    with open(config_path, 'r') as config_file:
         config = json.load(config_file)
+    
+    # Retrieve paths from the config file
     dataset_path = config.get("dataset_path")
     ann_path = config.get("annotation_path")
     return dataset_path, ann_path
-
