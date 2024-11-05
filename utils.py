@@ -12,11 +12,14 @@ def calculate_average_bbox_area(annotation_dir, class_name: str):
             break
     for key in class_annotation:
         bboxes = class_annotation[key].get('bboxes',[])
+        
         for box in bboxes:
             count = count + 1
             #Bounding boxes stored in COCO format, therefore index 2 and index 3
             #will contain width and heigh
             average_bbox_size = average_bbox_size + box[2] * box[3]
+            if (count % 20 == 0):
+                print(f"Count: {count} -> BBox Area: {average_bbox_size}")
         
     return average_bbox_size / count if count > 0 else 0
 
@@ -45,9 +48,9 @@ def count_files_in_directory(dir):
     subdir = os.listdir(dir)
     count = 0
 
-    for file in subdir:
-        if os.path.isfile(os.path.join(dir,file)):
-            count+=1
+    count = len([file for file in os.listdir(dir) if os.path.isfile(os.path.join(dir, file))])
+    
+    print(f"Count per class: {count} for {dir}")            
     return count
 
 def get_class_names(annotation_dir):
@@ -80,7 +83,7 @@ def get_label_map(annotation_dir):
 def load_config_file_paths():
     with open('config.json', 'r') as config_file:
         config = json.load(config_file)
-    dataset_path = config.get("file_path_1")
-    ann_path = config.get("file_path_2")
+    dataset_path = config.get("dataset_path")
+    ann_path = config.get("annotation_path")
     return dataset_path, ann_path
 

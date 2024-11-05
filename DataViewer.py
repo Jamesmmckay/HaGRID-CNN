@@ -11,9 +11,10 @@ class_count = {}
 
 bounding_box_size = {}
 for class_path in dataset_class_paths:
+    
     class_count[os.path.split(class_path)[1]] = utils.count_files_in_directory(class_path)
     bounding_box_size[os.path.split(class_path)[1]] = utils.calculate_average_bbox_area(ann_path, os.path.split(class_path)[1])
-    print(f"Bbox Area: {bounding_box_size[os.path.split(class_path)[1]]} for {os.path.split(class_path)[1]}")
+    
 classes = list(class_count.keys())
 values = list(class_count.values())
 
