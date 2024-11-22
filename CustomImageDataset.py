@@ -17,6 +17,7 @@ class CustomImageDataset(Dataset):
         """
         self.annotations = []
         self.label_map = {}
+        self.placeholder_images = {}
         # Load and combine annotations from all JSON files in the annotation directory
         self.annotations, self.label_map = utils.combine_annotations(annotation_dir)
         self.transform = transform
@@ -31,28 +32,41 @@ class CustomImageDataset(Dataset):
 
         for class_name in class_names:
             class_dir = os.path.join(img_dir, class_name)
+            placeholder_set = False  # Track if a placeholder has been set for the class
+        
             for file in os.listdir(class_dir):
                 img_path = os.path.join(class_dir, file)
-                split_path = os.path.split(img_path)
-                image_key = os.path.splitext(split_path[1])[0]
-
-                # Ensure the image has a corresponding annotation
-                if class_name not in self.label_map or image_key not in self.annotations[self.label_map[class_name]]:
-                    with open(log_path, "a") as f:
-                        f.write(f"Missing annotation for: {img_path}\n")
-                    continue
-
-                # Validate the image and apply transformation
+                image_key, ___ = utils.split_path(img_path)
                 try:
-                    image = Image.open(img_path)
-                    if self.transform:
-                        image = self.transform(image)
+                    # Open and transform the image (only if placeholder isn't set yet)
+                    if not placeholder_set:
+                        image = Image.open(img_path)
+                        if self.transform:
+                            image = self.transform(image)
+                        
+                        # Get annotation and label
+                        image_annotation = self.annotations[self.label_map[class_name]].get(image_key)
+                        
+                        if (image_annotation.iloc[1])[0] != "no_gesture":
+                            label = self.label_map[(image_annotation.iloc[1])[0]]
+                        else:
+                            label = self.label_map[(image_annotation.iloc[1])[1]]
+                            
+                        label = torch.tensor(label)  # Convert label to tensor
+                        self.placeholder_images[class_name] = [image, label]
+                        placeholder_set = True  # Mark placeholder as set
+        
+                    # Add image path to `self.image_paths` regardless of placeholder
                     self.image_paths.append(img_path)
-                    self.valid_annotations.append(self.annotations[self.label_map[class_name]].get(image_key))
+        
                 except Exception as e:
+                    # Log the invalid image and skip
+                    print(f"Error processing {img_path}: {e}")
                     with open(log_path, "a") as f:
-                        f.write(f"Could not load/transform image: {img_path} ({e})\n")
-                    continue
+                        f.write(f"{img_path}\n")
+
+
+                    
 
     def __len__(self):
         """
@@ -66,19 +80,18 @@ class CustomImageDataset(Dataset):
         """
         img_path = self.image_paths[idx]
 
-        # Extract the class name (directory) from the image path
-        split_path = os.path.split(img_path)
-        split_path = os.path.split(split_path[0])
-        class_name = split_path[1]
-        
-        # Get the image key (filename without extension)
-        split_path = os.path.split(img_path)
-        image_key = os.path.splitext(split_path[1])[0]
+        image_key, class_name = utils.split_path(img_path)
 
         # Retrieve the annotation for the current image
         image_annotation = self.annotations[self.label_map[class_name]].get(image_key)
-        image = Image.open(img_path)
-
+        try:
+            image = Image.open(img_path)
+        except:
+            print(f"Could not open the following image: {img_path}")
+            dir_path = os.path.dirname(os.path.realpath(__file__))
+            with open(os.path.join(dir_path, "log/image_exception_list.txt"), "a") as f:
+                f.write(f"{img_path}\n")
+            return self.placeholder_images[class_name][0], self.placeholder_images[class_name][1]  # Skip the faulty image
         # Extract bounding box from the annotation
         bbox = image_annotation["bboxes"][0]
 
@@ -99,7 +112,7 @@ class CustomImageDataset(Dataset):
             dir_path = os.path.dirname(os.path.realpath(__file__))
             with open(os.path.join(dir_path, "log/image_exception_list.txt"), "a") as f:
                 f.write(f"{img_path}\n")
-            return None  # Skip the faulty image
+            return self.placeholder_images[class_name][0], self.placeholder_images[class_name][1]  # Skip the faulty image
 
         # Determine image dimensions, depending on whether it's a PIL image or a tensor
         if isinstance(image, Image.Image):

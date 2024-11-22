@@ -79,6 +79,18 @@ def get_label_map(annotation_dir):
 
     return label_map
 
+def split_path(img_path):
+    # Extract the class name (directory) from the image path
+    split_path = os.path.split(img_path)
+    split_path = os.path.split(split_path[0])
+    class_name = split_path[1]
+    
+    # Get the image key (filename without extension)
+    split_path = os.path.split(img_path)
+    image_key = os.path.splitext(split_path[1])[0]
+    return image_key, class_name
+        
+
 def load_config_file_paths():
     # Get the directory where this script is located
     script_directory = os.path.dirname(os.path.abspath(__file__))

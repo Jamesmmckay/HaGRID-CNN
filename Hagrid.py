@@ -16,13 +16,12 @@ from AlexNet import AlexNet
 from CustomImageDataset import CustomImageDataset
 import utils
 
-print("Starting the testing sequence...")
 
 # Hyperparameters and configuration
 batch_size = 10  # Number of images in each batch for training/testing
 lr = 0.1  # Learning rate
 num_classes = 18  # Number of gesture classes to predict
-epochs = 2  # Number of times the model sees the entire dataset
+epochs = 5  # Number of times the model sees the entire dataset
 testing_ratio = 0.2  # Percentage of the dataset used for testing
 random_seed = 37  # Random seed to ensure reproducibility
 
@@ -51,9 +50,14 @@ training_indices, testing_indices = indices[split:], indices[:split]
 training_sampler = SubsetRandomSampler(training_indices)
 testing_sampler = SubsetRandomSampler(testing_indices)
 
-# Create DataLoaders for training and testing sets
-training_loader = DataLoader(dataset, batch_size=batch_size, sampler=training_sampler)
-testing_loader = DataLoader(dataset, batch_size=batch_size, sampler=testing_sampler)
+def collate_fn(batch):
+    # Filter out None items
+    batch = [item for item in batch if item is not None]
+    return torch.utils.data.default_collate(batch)
+
+# Use this collate function in the DataLoader
+training_loader = DataLoader(dataset, batch_size=batch_size, sampler=training_sampler, collate_fn=collate_fn)
+testing_loader = DataLoader(dataset, batch_size=batch_size, sampler=testing_sampler, collate_fn=collate_fn)
 
 # Initialize lists to track training/testing performance over time
 train_losses = []
@@ -72,6 +76,8 @@ optimizer = torch.optim.Adam(model.parameters(), lr)
 
 # Record the start time to measure training duration
 start_time = time.time()
+print(f"Dataset size: {len(dataset)}")
+print(f"DataLoader batches: {len(training_loader)}")
 
 # Training loop over the number of epochs
 for epoch in range(epochs):
@@ -112,7 +118,7 @@ for epoch in range(epochs):
         loss_plot.append(loss.item())  # Track loss for plotting
 
         # Print batch loss for every 40th batch
-        if b % 40 == 0:
+        if b % 10 == 0:
             print(f"Epoch: {epoch} \t Batch: {b} \t Loss: {loss.item()}")
 
     # After epoch, record total loss and correct predictions for training
