@@ -16,12 +16,11 @@ from AlexNet import AlexNet
 from CustomImageDataset import CustomImageDataset
 import utils
 
-
 # Hyperparameters and configuration
 batch_size = 10  # Number of images in each batch for training/testing
 lr = 0.1  # Learning rate
 num_classes = 18  # Number of gesture classes to predict
-epochs = 5  # Number of times the model sees the entire dataset
+epochs = 2  # Number of times the model sees the entire dataset
 testing_ratio = 0.2  # Percentage of the dataset used for testing
 random_seed = 37  # Random seed to ensure reproducibility
 
@@ -118,17 +117,18 @@ for epoch in range(epochs):
         loss_plot.append(loss.item())  # Track loss for plotting
 
         # Print batch loss for every 40th batch
-        if b % 10 == 0:
+        if b % 40 == 0:
             print(f"Epoch: {epoch} \t Batch: {b} \t Loss: {loss.item()}")
 
     # After epoch, record total loss and correct predictions for training
-    train_losses.append(loss)
-    train_correct.append(trn_cor)
+    train_losses.append(sum(loss_plot) / len(loss_plot))
+    train_correct.append(trn_cor.item())
 
     # Testing step: Set model to evaluation mode (no gradient calculations)
     model.eval()
 
     with torch.no_grad():  # Disable gradient tracking for evaluation
+        test_loss_epoch = 0
         for b, (X_test, y_test) in enumerate(testing_loader):
             b += 1  # Batch number
             
@@ -143,12 +143,14 @@ for epoch in range(epochs):
             
             # Count correct predictions
             tst_cor += (predicted == y_test).sum()
+            loss = criterion(y_val, y_test)
+            test_loss_epoch += loss.item()
 
     # Calculate and log the loss for the test set
-    loss = criterion(y_val, y_test)
+    
     print(f"Epoch: {epoch} \t Loss: {loss.item()}")
-    test_losses.append(loss)
-    test_correct.append(tst_cor)
+    test_losses.append(test_loss_epoch / len(testing_loader))
+    test_correct.append(tst_cor.item())
 
 # Calculate total time taken for training
 current_time = time.time()
@@ -160,11 +162,35 @@ torch.save(model.state_dict(), os.path.join(os.path.dirname(os.path.realpath(__f
 # Print the total training time in minutes
 print(f"Training took: {total / 60} minutes")
 
-# Plot the results (correct predictions and losses)
-plt.plot(len(dataset), train_correct, label="Training Correct")
-plt.plot(len(dataset), train_losses, label="Training Losses")
-plt.plot(len(dataset), test_correct, label="Test Correct")
-plt.plot(len(dataset), test_losses, label="Test Losses")
+# Plotting results
+epochs_range = range(epochs)
 
+plt.figure(figsize=(10, 5))
+
+# Plot losses
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, train_losses, label="Train Loss")
+plt.plot(epochs_range, test_losses, label="Test Loss")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.title("Losses over Epochs")
 plt.legend()
+
+# Plot accuracies
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, train_correct, label="Train Correct")
+plt.plot(epochs_range, test_correct, label="Test Correct")
+plt.xlabel("Epochs")
+plt.ylabel("Correct Predictions")
+plt.title("Correct Predictions over Epochs")
+plt.legend()
+
+# Save the plot to a file
+output_dir = "Plots"
+os.makedirs(output_dir, exist_ok=True)
+plot_path = os.path.join(output_dir, "training_results.png")
+plt.savefig(plot_path)
+
 plt.show()
+
+print(f"Plot saved to: {plot_path}")
