@@ -17,10 +17,10 @@ from CustomImageDataset import CustomImageDataset
 import utils
 
 # Hyperparameters and configuration
-batch_size = 10  # Number of images in each batch for training/testing
-lr = 0.1  # Learning rate
+batch_size = 35  # Number of images in each batch for training/testing
+lr = 0.01  # Learning rate
 num_classes = 18  # Number of gesture classes to predict
-epochs = 2  # Number of times the model sees the entire dataset
+epochs = 5  # Number of times the model sees the entire dataset
 testing_ratio = 0.2  # Percentage of the dataset used for testing
 random_seed = 37  # Random seed to ensure reproducibility
 
