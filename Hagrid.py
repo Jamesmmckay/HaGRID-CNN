@@ -14,6 +14,9 @@ from torch.utils.data import DataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from AlexNet import AlexNet
 from CustomImageDataset import CustomImageDataset
+import utils
+
+print("Starting the testing sequence...")
 
 # Hyperparameters and configuration
 batch_size = 10  # Number of images in each batch for training/testing
@@ -27,8 +30,7 @@ random_seed = 37  # Random seed to ensure reproducibility
 transform = transforms.Compose([transforms.ToTensor(), transforms.Resize((224, 224))])
 
 # Update the path for your dataset
-external_training_path = 'D:\\HagridDataset\\subsample'
-external_annotation_path = 'D:\\HagridDataset\\ann_subsample\\ann_subsample'
+external_training_path, external_annotation_path = utils.load_config_file_paths()
 
 # Load the custom dataset with annotations and image transformations
 dataset = CustomImageDataset(annotation_dir=external_annotation_path, img_dir=external_training_path, transform=transform)

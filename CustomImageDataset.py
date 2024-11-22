@@ -23,13 +23,36 @@ class CustomImageDataset(Dataset):
 
         # Gather all image file paths from the directory structure
         self.image_paths = []
+        self.valid_annotations = []
         class_names = os.listdir(img_dir)
-        
+         # Log invalid images during initialization
+        log_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "log/image_exception_list.txt")
+        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+
         for class_name in class_names:
             class_dir = os.path.join(img_dir, class_name)
             for file in os.listdir(class_dir):
-                # Store the full path to each image
-                self.image_paths.append(os.path.join(class_dir, file))
+                img_path = os.path.join(class_dir, file)
+                split_path = os.path.split(img_path)
+                image_key = os.path.splitext(split_path[1])[0]
+
+                # Ensure the image has a corresponding annotation
+                if class_name not in self.label_map or image_key not in self.annotations[self.label_map[class_name]]:
+                    with open(log_path, "a") as f:
+                        f.write(f"Missing annotation for: {img_path}\n")
+                    continue
+
+                # Validate the image and apply transformation
+                try:
+                    image = Image.open(img_path)
+                    if self.transform:
+                        image = self.transform(image)
+                    self.image_paths.append(img_path)
+                    self.valid_annotations.append(self.annotations[self.label_map[class_name]].get(image_key))
+                except Exception as e:
+                    with open(log_path, "a") as f:
+                        f.write(f"Could not load/transform image: {img_path} ({e})\n")
+                    continue
 
     def __len__(self):
         """

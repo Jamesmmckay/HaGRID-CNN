@@ -1,6 +1,5 @@
 #!/bin/bash
-#Format for this script is:
-#./run_python_with_nohup.sh name_of_script.py output_file.out
+
 # Name of the Python script to execute
 PYTHON_SCRIPT=$1
 
@@ -10,22 +9,18 @@ if [ ! -f "$PYTHON_SCRIPT" ]; then
   exit 1
 fi
 
-# Check if the output file exists
-if [ ! -f "./out/$2" ]; then
-  echo "Creating $2 in ./out/"
-fi
+# Name of the tmux session
+TMUX_SESSION=$2
 
-# Run the Python script using nohup
-echo "Starting $PYTHON_SCRIPT with nohup..."
-nohup python3 "$PYTHON_SCRIPT" > ./out/$2 2>&1 &
+# Start a new tmux session and run the script
+echo "Starting $PYTHON_SCRIPT in a new tmux session ($TMUX_SESSION)..."
+tmux new-session -d -s "$TMUX_SESSION" "/mnt/c/Users/james/AppData/Local/Microsoft/WindowsApps/python3.exe \"$PYTHON_SCRIPT\" > ./log/output_file.log 2>&1; exec bash"
 
-# Capture the process ID of the background script
-PID=$!
 
 # Inform the user
-echo "Python script is running in the background with PID: $PID"
-echo "Output will be written to ./out/$2"
+echo "Python script is running in the background in tmux session: $TMUX_SESSION"
+echo "Use 'tmux attach-session -t $TMUX_SESSION' to reattach to the session."
 
-# Optional: Monitor the output file in real-time
-echo "Monitoring $2 (press Ctrl+C to stop)..."
-tail -f ./out/$2
+# Optional: List active tmux sessions
+echo "Active tmux sessions:"
+tmux list-sessions
