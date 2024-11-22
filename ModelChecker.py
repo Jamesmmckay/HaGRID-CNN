@@ -68,9 +68,6 @@ optimizer = torch.optim.Adam(model.parameters(),lr)
 
 start_time = time.time()
 
-
-
-
 for epoch in range(epochs):
     trn_cor = 0
     epoch_loss = 0
